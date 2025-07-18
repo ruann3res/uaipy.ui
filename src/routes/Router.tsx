@@ -4,6 +4,8 @@ import { Route, Routes } from "react-router-dom"
 import { AuthGuard } from "./authGuard"
 import { SignUp, SignIn } from "@/pages/Auth"
 import { ProjectForm, Projects } from "@/pages/Projects"
+import { Devices } from "@/pages/Devices"
+import { DeviceForm } from "@/pages/Devices/DeviceForm"
 
 export const Router = () => {
   return (
@@ -23,6 +25,8 @@ export const Router = () => {
           } />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/form" element={<ProjectForm />} />
+          <Route path="/devices" element={<Devices />} />
+          <Route path="/devices/form" element={<DeviceForm />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
