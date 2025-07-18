@@ -6,6 +6,8 @@ import { SignUp, SignIn } from "@/pages/Auth"
 import { ProjectForm, Projects } from "@/pages/Projects"
 import { Devices } from "@/pages/Devices"
 import { DeviceForm } from "@/pages/Devices/DeviceForm"
+import { Sensor } from "@/pages/Sensor/Sensor"
+import { SensorForm } from "@/pages/Sensor/SensorForm"
 
 export const Router = () => {
   return (
@@ -27,6 +29,8 @@ export const Router = () => {
           <Route path="/projects/form" element={<ProjectForm />} />
           <Route path="/devices" element={<Devices />} />
           <Route path="/devices/form" element={<DeviceForm />} />
+          <Route path="/sensors" element={<Sensor />} />
+          <Route path="/sensors/form" element={<SensorForm />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
