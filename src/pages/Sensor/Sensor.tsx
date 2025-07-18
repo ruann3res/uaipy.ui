@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useDevices, useProjects, useSensors } from "@/hooks";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { DeviceSelect, ProjectSelect } from "../Reports/teste";
+import { DeviceSelect, ProjectSelect } from "@/components/Selects";
 import { CardInfo } from "@/components/CardInfo";
 import { SensorType } from "@/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";

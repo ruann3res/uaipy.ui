@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ProjectSelect } from "../Reports/TestProjects/ProjectSelect";
+import { ProjectSelect } from "@/components/Selects";
 import { useProjects } from "@/hooks";
 import { useDevices } from "@/hooks/useDevices";
 import { useEffect, useState } from "react";
