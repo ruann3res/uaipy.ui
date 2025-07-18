@@ -2,7 +2,8 @@ import { DashboardLayout } from "@/components/Layouts"
 import { NotFound } from "@/pages/NotFound"
 import { Route, Routes } from "react-router-dom"
 import { AuthGuard } from "./authGuard"
-import { SignUp,SignIn } from "@/pages/Auth"
+import { SignUp, SignIn } from "@/pages/Auth"
+import { ProjectForm, Projects } from "@/pages/Projects"
 
 export const Router = () => {
   return (
@@ -20,9 +21,11 @@ export const Router = () => {
               <p>Bem-vindo ao UaiPy!</p>
             </div>
           } />
-            <Route path="*" element={<NotFound />} />
-          </Route>
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/form" element={<ProjectForm />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
+      </Route>
     </Routes>
   )
 }
