@@ -8,6 +8,7 @@ import { Devices } from "@/pages/Devices"
 import { DeviceForm } from "@/pages/Devices/DeviceForm"
 import { Sensor } from "@/pages/Sensor/Sensor"
 import { SensorForm } from "@/pages/Sensor/SensorForm"
+import { Reports } from "@/pages/Reports"
 
 export const Router = () => {
   return (
@@ -31,6 +32,7 @@ export const Router = () => {
           <Route path="/devices/form" element={<DeviceForm />} />
           <Route path="/sensors" element={<Sensor />} />
           <Route path="/sensors/form" element={<SensorForm />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
