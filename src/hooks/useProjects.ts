@@ -22,7 +22,7 @@ export function useCreateProject() {
         }) => {
             return ProjectService.create(data)
         },
-        
+
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
         }
@@ -31,12 +31,10 @@ export function useCreateProject() {
 
 export function useDeleteProject() {
     const queryClient = useQueryClient();
-    
     return useMutation({
         mutationFn: async (id: string) => {
             return ProjectService.delete(id)
         },
-        // 🚀 Invalidar automaticamente após deletar
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
         }
