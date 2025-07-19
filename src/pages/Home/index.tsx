@@ -1,6 +1,6 @@
 import { DeviceSelect, ProjectSelect } from "@/components/Selects";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDevices, useGenerateReport, useProjects } from "@/hooks";
+import { useDevices, useGenerateReport, useProjects, useRecentSensorData } from "@/hooks";
 import { useAvaregeDailyData, useAvaregeMonthlyData, useAvaregeWeeklyData } from "@/hooks/useAvaregeData";
 import { useBlockedUser } from "@/hooks/useBlockedUser";
 import { useState, useMemo, useEffect } from "react";
@@ -10,6 +10,7 @@ import { UserAnalytics } from "./UserAnalytics";
 import { useUserAnalytics } from "@/hooks/Analytics";
 import { EmailButton } from "@/components/EmailButton";
 import { toast } from "sonner";
+import { SensorData } from "@/types";
 
 
 const formatDate = (dateString: string) => {
@@ -83,7 +84,10 @@ export const Home = () => {
     const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(
         isBlocked ? defaultProjectId : undefined
     );
-    const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
+
+    const defaultDeviceId = "476bf17b-5b27-4c50-8802-14cc06f62a37"
+
+    const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(defaultDeviceId);
     const { data: devices, isLoading: isLoadingDevices } = useDevices(selectedProjectId || "");
     const [period, setPeriod] = useState("monthly")
 
@@ -105,9 +109,28 @@ export const Home = () => {
         return undefined;
     }, [selectedDeviceId, devices]);
 
-    const { data: dailyData, isLoading: dailyLoading } = useAvaregeDailyData(currentDeviceId || "")
-    const { data: monthlyData, isLoading: monthlyLoading } = useAvaregeMonthlyData(currentDeviceId || "")
-    const { data: weeklyData, isLoading: weeklyLoading } = useAvaregeWeeklyData(currentDeviceId || "")
+    // Buscar dados recentes quando o dispositivo padrão for selecionado
+    const isDefaultDevice = currentDeviceId === defaultDeviceId;
+    
+    // Só buscar dados de média se NÃO for o dispositivo padrão
+    const { data: dailyData, isLoading: dailyLoading } = useAvaregeDailyData(
+        isDefaultDevice ? "" : currentDeviceId || ""
+    )
+    const { data: monthlyData, isLoading: monthlyLoading } = useAvaregeMonthlyData(
+        isDefaultDevice ? "" : currentDeviceId || ""
+    )
+    const { data: weeklyData, isLoading: weeklyLoading } = useAvaregeWeeklyData(
+        isDefaultDevice ? "" : currentDeviceId || ""
+    )
+    
+    // Buscar dados recentes apenas para o dispositivo padrão
+    const { data: recentSensorData, isLoading: recentDataLoading } = useRecentSensorData(
+        isDefaultDevice ? currentDeviceId || "" : "",
+        isDefaultDevice ? 50 : 0
+    );
+    
+    // Cast para o tipo correto
+    const sensorData = recentSensorData as SensorData[] | undefined;
 
     const processData = (data: any[] | undefined, sensorName: string) => {
         if (!data) return [];
@@ -132,7 +155,37 @@ export const Home = () => {
         return processedData;
     };
 
+    // Função para processar dados recentes dos sensores
+    const processRecentData = (sensorData: SensorData[] | undefined, sensorName: string) => {
+        if (!sensorData) return [];
+
+        const sensor = sensorData.find(s => s.sensor_name === sensorName);
+        if (!sensor || !sensor.recent_data) return [];
+
+        return sensor.recent_data
+            .map((item) => ({
+                date: item.timestamp,
+                average_value: parseFloat(item.value),
+                unit_of_measurement: sensor.unit_of_measurement
+            }))
+            .filter((item) => {
+                const date = new Date(item.date);
+                const isValid = !isNaN(date.getTime()) && !isNaN(item.average_value);
+                if (!isValid) {
+                    console.warn(`Dado inválido encontrado para sensor ${sensorName}:`, item);
+                }
+                return isValid;
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    };
+
     const getDataByPeriod = (sensorName: string) => {
+        // Se for o dispositivo padrão, usar dados recentes
+        if (isDefaultDevice && sensorData) {
+            return processRecentData(sensorData, sensorName);
+        }
+
+        // Caso contrário, usar dados de média por período
         let data;
         switch (period) {
             case "daily":
@@ -150,13 +203,13 @@ export const Home = () => {
         return processData(data || [], sensorName);
     };
 
-    const airHum =  useMemo(() => getDataByPeriod("air_hum"), [period, dailyData, weeklyData, monthlyData, currentDeviceId]);
-    const airTemp = useMemo(() => getDataByPeriod("air_tem"), [period, dailyData, weeklyData, monthlyData, currentDeviceId]);
-    const soilHum = useMemo(() => getDataByPeriod("soil_hum"), [period, dailyData, weeklyData, monthlyData, currentDeviceId]);
-    const soilTemp = useMemo(() => getDataByPeriod("soil_tem"), [period, dailyData, weeklyData, monthlyData, currentDeviceId]);
-    const rain = useMemo(() => getDataByPeriod("rain"), [period, dailyData, weeklyData, monthlyData, currentDeviceId]);
+    const airHum =  useMemo(() => getDataByPeriod("air_hum"), [period, dailyData, weeklyData, monthlyData, currentDeviceId, isDefaultDevice, sensorData]);
+    const airTemp = useMemo(() => getDataByPeriod("air_tem"), [period, dailyData, weeklyData, monthlyData, currentDeviceId, isDefaultDevice, sensorData]);
+    const soilHum = useMemo(() => getDataByPeriod("soil_hum"), [period, dailyData, weeklyData, monthlyData, currentDeviceId, isDefaultDevice, sensorData]);
+    const soilTemp = useMemo(() => getDataByPeriod("soil_tem"), [period, dailyData, weeklyData, monthlyData, currentDeviceId, isDefaultDevice, sensorData]);
+    const rain = useMemo(() => getDataByPeriod("rain"), [period, dailyData, weeklyData, monthlyData, currentDeviceId, isDefaultDevice, sensorData]);
 
-    const isLoading = dailyLoading || monthlyLoading || weeklyLoading;
+    const isLoading = isDefaultDevice ? recentDataLoading : (dailyLoading || monthlyLoading || weeklyLoading);
 
     const sensorConfigs = {
         airTemp: { name: "Temperatura do Ar", unit: airTemp[0]?.unit_of_measurement || "°C", color: "#ff6b6b", chartType: "point" },
@@ -320,19 +373,24 @@ export const Home = () => {
                         {!isBlocked && selectedProjectId && (
                             <span className="text-blue-600 dark:text-blue-400"> do projeto {projects?.find(project => project.id === selectedProjectId)?.name}</span>
                         )}
+                        {isDefaultDevice && (
+                            <span className="text-green-600 dark:text-green-400 text-lg"> - Dados em Tempo Real</span>
+                        )}
                     </h1>
                     <div className="flex justify-between items-center">
                         <div className="flex gap-4 items-center">
-                            <Select value={period} onValueChange={setPeriod}>
-                                <SelectTrigger className="w-48">
-                                    <SelectValue placeholder="Selecione o período" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="daily">Diário</SelectItem>
-                                    <SelectItem value="weekly">Semanal</SelectItem>
-                                    <SelectItem value="monthly">Mensal</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            {!isDefaultDevice && (
+                                <Select value={period} onValueChange={setPeriod}>
+                                    <SelectTrigger className="w-48">
+                                        <SelectValue placeholder="Selecione o período" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="daily">Diário</SelectItem>
+                                        <SelectItem value="weekly">Semanal</SelectItem>
+                                        <SelectItem value="monthly">Mensal</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )}
                             
                             {!isBlocked && (
                                 <ProjectSelect
@@ -358,6 +416,14 @@ export const Home = () => {
                         </div>
                     </div>
                 </div>
+
+                {isDefaultDevice && (
+                    <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <p className="text-sm text-green-800 dark:text-green-200">
+                            <strong>Dados em Tempo Real:</strong> Exibindo os dados mais recentes coletados pelos sensores deste dispositivo.
+                        </p>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <ChartComponent

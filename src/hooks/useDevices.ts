@@ -20,6 +20,8 @@ export function useRecentSensorData(deviceId: string, limit: number = 10) {
         queryFn: async () => {
             return DevicesService.getRecentSensorData(deviceId, limit)
         },
+        refetchInterval: 4000,
+        refetchIntervalInBackground: true,
     })
 }
 
