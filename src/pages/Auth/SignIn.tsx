@@ -50,6 +50,7 @@ export function SignIn() {
                 onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                 required
               />
+              <p className="text-sm text-muted-foreground">Utilize o username: robo123</p>
             </div>
 
             <div className="space-y-2">
@@ -64,6 +65,7 @@ export function SignIn() {
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   required
                 />
+                <p className="text-sm text-muted-foreground">Utilize a senha: robo123</p>
                 <Button
                   type="button"
                   variant="ghost"
