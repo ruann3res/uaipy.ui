@@ -37,7 +37,7 @@ export class DevicesService {
     static async deviceSensorDailyAverage(id: string): Promise<SensorAverageType[]> {
         const response = await httpClient.get<SensorAverageType[]>(`devices/${id}/sensor-data/averages/daily`);
         return response.data;
-    }   
+    }
 
     static async deviceSensorWeeklyAverage(id: string): Promise<SensorAverageType[]> {
         const response = await httpClient.get<SensorAverageType[]>(`devices/${id}/sensor-data/averages/weekly`);
@@ -51,6 +51,10 @@ export class DevicesService {
 
     static async delete(id: string): Promise<void> {
         await httpClient.delete(`/devices/${id}`);
+    }
+
+    static async generateReport(id: string, email: string): Promise<void> {
+        await httpClient.post(`/devices/${id}/report/email?to_email=${email}`)
     }
 }
 

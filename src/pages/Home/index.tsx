@@ -1,6 +1,6 @@
 import { DeviceSelect, ProjectSelect } from "@/components/Selects";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDevices, useProjects } from "@/hooks";
+import { useDevices, useGenerateReport, useProjects } from "@/hooks";
 import { useAvaregeDailyData, useAvaregeMonthlyData, useAvaregeWeeklyData } from "@/hooks/useAvaregeData";
 import { useBlockedUser } from "@/hooks/useBlockedUser";
 import { useState, useMemo, useEffect } from "react";
@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, AreaChart, Area, ResponsiveContainer } from "recharts";
 import { UserAnalytics } from "./UserAnalytics";
 import { useUserAnalytics } from "@/hooks/Analytics";
+import { EmailButton } from "@/components/EmailButton";
+import { toast } from "sonner";
 
 
 const formatDate = (dateString: string) => {
@@ -266,11 +268,28 @@ export const Home = () => {
     };
 
 
+    const { mutate: generateReport } = useGenerateReport();
+
+    const handleSendEmail = (email: string) => {
+        generateReport({ id: currentDeviceId || "", email });
+
+        toast.success("Relatório enviado com sucesso!");
+    };
+
     return (
         <>
             <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Página Geral</h1>
                 <p className="text-gray-700 dark:text-gray-300">Bem-vindo ao UaiPy!</p>
+                
+                <div className="mt-4 flex items-center gap-4">
+                    <EmailButton 
+                        onSendEmail={handleSendEmail}
+                        buttonText="Enviar Relatório por Email"
+                        placeholder="Digite o email para envio"
+                    />
+                </div>
+                
                 {isBlocked && (
                     <div className="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                         <p className="text-sm text-amber-800 dark:text-amber-200">

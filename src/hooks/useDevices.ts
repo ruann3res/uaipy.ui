@@ -38,3 +38,11 @@ export function useDeleteDevice() {
         },
     })
 }
+
+export function useGenerateReport(){
+    return useMutation({
+        mutationFn: async ({ id, email }: { id: string; email: string }) => {
+            return DevicesService.generateReport(id, email)
+        }
+    })
+}
