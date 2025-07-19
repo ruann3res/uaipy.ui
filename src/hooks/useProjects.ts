@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ProjectService } from "@/services/api/v1";
+import { ProjectService } from "@/services/api/v1/ProjectsService";
 
 export function useProjects() {
     return useQuery({
@@ -22,7 +22,7 @@ export function useCreateProject() {
         }) => {
             return ProjectService.create(data)
         },
-        // 🚀 Invalidar automaticamente após criar
+        
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
         }

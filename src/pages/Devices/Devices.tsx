@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ProjectSelect } from "@/components/Selects";
 import { useProjects } from "@/hooks";
-import { useDevices } from "@/hooks/useDevices";
+import { useDeleteDevice, useDevices } from "@/hooks/useDevices";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CardInfo } from "@/components/CardInfo";
@@ -15,11 +15,13 @@ export const Devices = () => {
     const { data: projects } = useProjects();
     const queryClient = useQueryClient();
     const [searchParams] = useSearchParams();
+    const { mutateAsync: deleteDevice } = useDeleteDevice();
     const initialProjectId = searchParams.get("projectId") || undefined;
     const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(initialProjectId);
     const { data: devices, isLoading: isLoadingDevices } = useDevices(selectedProjectId || "");
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deviceToDelete, setDeviceToDelete] = useState<Device | null>(null);
+    
 
     useEffect(() => {
         return () => {
@@ -47,11 +49,10 @@ export const Devices = () => {
 
     const confirmDelete = async () => {
         if (!deviceToDelete) return;
-        // Aqui você deve chamar o service de deleção do device
-        // Exemplo: await DevicesService.delete(deviceToDelete.id)
+        await deleteDevice(deviceToDelete.id);
         setConfirmOpen(false);
         setDeviceToDelete(null);
-        // Atualize a lista de devices se necessário
+        queryClient.invalidateQueries({ queryKey: ['devices'] });
     };
 
     const cancelDelete = () => {

@@ -30,3 +30,11 @@ export function useCreateDevice() {
         },
     })
 }
+
+export function useDeleteDevice() {
+    return useMutation({
+        mutationFn: async (deviceId: string) => {
+            return DevicesService.delete(deviceId)
+        },
+    })
+}

@@ -94,7 +94,7 @@ export function DeviceForm() {
                 toast.success("Dispositivo criado com sucesso!");
             }
             reset();
-            navigate('/devices'); // Limpa a query string
+            navigate('/devices');
         } catch (error) {
             toast.error(isEdit ? "Erro ao atualizar dispositivo. Tente novamente." : "Erro ao criar dispositivo. Tente novamente.");
         }

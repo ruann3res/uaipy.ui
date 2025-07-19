@@ -33,4 +33,31 @@ export class DevicesService {
         const response = await httpClient.get<Device>(`/devices/${id}`);
         return response.data;
     }
+
+    static async deviceSensorDailyAverage(id: string): Promise<SensorAverageType[]> {
+        const response = await httpClient.get<SensorAverageType[]>(`devices/${id}/sensor-data/averages/daily`);
+        return response.data;
+    }   
+
+    static async deviceSensorWeeklyAverage(id: string): Promise<SensorAverageType[]> {
+        const response = await httpClient.get<SensorAverageType[]>(`devices/${id}/sensor-data/averages/weekly`);
+        return response.data;
+    }
+
+    static async deviceSensorMonthlyAverage(id: string): Promise<SensorAverageType[]> {
+        const response = await httpClient.get<SensorAverageType[]>(`devices/${id}/sensor-data/averages/monthly`);
+        return response.data;
+    }
+
+    static async delete(id: string): Promise<void> {
+        await httpClient.delete(`/devices/${id}`);
+    }
+}
+
+type SensorAverageType = {
+    sensor_id: string;
+    sensor_name: string;
+    date: string;
+    average_value: string;
+    unit_of_measurement: string;
 }

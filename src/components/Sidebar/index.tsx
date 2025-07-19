@@ -15,6 +15,7 @@ import { ThemeToggle } from '../ThemeToggle'
 import { Link, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useBlockedUser } from '@/hooks/useBlockedUser'
 
 interface SidebarProps {
   isOpen: boolean
@@ -34,6 +35,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const location = useLocation()
   const [isMobile, setIsMobile] = useState(false)
   const { signOut } = useAuth()
+  const { isBlocked } = useBlockedUser()
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -99,34 +101,43 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
         {/* Navegação */}
         <nav className="flex-1 px-4 py-4 space-y-2">
-          {navigationItems.map((item) => {
-            const isActive = isActiveLink(item.href)
-            
-            return (
-              <Link
-                key={item.label}
-                to={item.href}
-                onClick={handleLinkClick}
-                className={`
-                  flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                  ${isActive 
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm' 
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                  }
-                  active:scale-95
-                `}
-              >
-                <item.icon className="h-5 w-5 mr-3" />
-                {item.label}
-                {isActive && (
-                  <ChevronRight className="h-4 w-4 ml-auto" />
-                )}
-              </Link>
-            )
-          })}
+          {navigationItems
+            .map((item) => {
+              const isActive = isActiveLink(item.href)
+              
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={handleLinkClick}
+                  className={`
+                    flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
+                    ${isActive 
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    }
+                    active:scale-95
+                  `}
+                >
+                  <item.icon className="h-5 w-5 mr-3" />
+                  {item.label}
+                  {isActive && (
+                    <ChevronRight className="h-4 w-4 ml-auto" />
+                  )}
+                </Link>
+              )
+            })}
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+          {isBlocked && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+              <p className="text-xs text-amber-800 dark:text-amber-200">
+                <strong>Acesso limitado:</strong> Crie uma nova conta para acessar todas as funcionalidades.
+              </p>
+            </div>
+          )}
+          
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-700 dark:text-gray-300">Tema</span>
             <ThemeToggle />

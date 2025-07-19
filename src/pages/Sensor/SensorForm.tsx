@@ -77,7 +77,7 @@ export function SensorForm() {
                 toast.success("Sensor criado com sucesso!");
             }
             reset();
-            navigate('/sensors'); // Limpa a query string
+            navigate('/sensors');
         } catch (error) {
             toast.error(isEdit ? "Erro ao atualizar sensor. Tente novamente." : "Erro ao criar sensor. Tente novamente.");
         }

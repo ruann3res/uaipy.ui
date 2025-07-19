@@ -17,7 +17,6 @@ export const Sensor = () => {
     const { data: devices, isLoading: isLoadingDevices } = useDevices(selectedProjectId || "");
 
     const { data: sensors, isLoading: isLoadingSensors } = useSensors(selectedDeviceId || "");
-console.log(sensors)
 
 const formatData = (sensor: SensorType) => {
     return {
