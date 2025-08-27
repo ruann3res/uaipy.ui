@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/select";
 import { useProjects } from "@/hooks";
 import { useDevices, useRecentSensorData } from "@/hooks/useDevices";
-import { useReadSensor } from "@/hooks/useSensor";
 import { Device, SensorData } from "@/types";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
@@ -41,7 +40,6 @@ export function ReportGraph() {
       selectedDeviceId ? selectedDeviceId : "",
       selectedDeviceId ? 24 : 0
     );
-  const { data: readSensorData } = useReadSensor(selectedSensors[0]);
 
   const sensorData = recentSensorData as SensorData[] | undefined;
   function isChuva(sensor: SensorData) {
@@ -191,14 +189,18 @@ export function ReportGraph() {
               {selectedSensor.recent_data &&
               selectedSensor.recent_data.length > 0 ? (
                 <CustomChart
-                  data={selectedSensor.recent_data}
+                  data={selectedSensor.recent_data.sort(
+                    (a, b) =>
+                      new Date(a.timestamp).getTime() -
+                      new Date(b.timestamp).getTime()
+                  )}
                   chartType={chartType}
                   xKey={"timestamp"}
                   yKey={"value"}
                   legendName={selectedSensor.sensor_name}
-                  unit={readSensorData?.unit_of_measurement}
-                  dataMax={readSensorData?.max_value}
-                  dataMin={readSensorData?.min_value}
+                  unit={selectedSensor.unit_of_measurement}
+                  dataMax={undefined}
+                  dataMin={undefined}
                 />
               ) : (
                 <div className="flex items-center justify-center h-32 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
