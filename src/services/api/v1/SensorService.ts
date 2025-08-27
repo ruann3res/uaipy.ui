@@ -43,4 +43,25 @@ export class SensorService {
     const { data: response } = await httpClient.delete(`/sensors/${id}`);
     return response;
   }
+
+  static async dailyAverage(deviceId: string) {
+    const { data: response } = await httpClient.get(
+      `/devices/${deviceId}/sensor-data/averages/daily`
+    );
+    return response;
+  }
+
+  static async weeklyAverage(deviceId: string) {
+    const { data: response } = await httpClient.get(
+      `/devices/${deviceId}/sensor-data/averages/weekly`
+    );
+    return response;
+  }
+
+  static async monthlyAverage(deviceId: string) {
+    const { data: response } = await httpClient.get(
+      `/devices/${deviceId}/sensor-data/averages/monthly`
+    );
+    return response;
+  }
 }

@@ -15,6 +15,7 @@ import {
 } from "@/hooks";
 import { useUserAnalytics } from "@/hooks/Analytics";
 import {
+  useAvaregeAnnualData,
   useAvaregeDailyData,
   useAvaregeMonthlyData,
   useAvaregeWeeklyData,
@@ -49,7 +50,7 @@ const formatDate = (dateString: string) => {
       });
     }
   } catch (error) {
-    console.warn("Erro ao formatar data:", dateString, error);
+    return dateString;
   }
   return "Data inválida";
 };
@@ -67,7 +68,7 @@ const formatDateTime = (dateString: string) => {
       });
     }
   } catch (error) {
-    console.warn("Erro ao formatar data no tooltip:", dateString, error);
+    return dateString;
   }
   return dateString;
 };
@@ -122,10 +123,12 @@ export const Home = () => {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(
     undefined
   );
+  const [period, setPeriod] = useState("monthly");
+  const [isPeriodChanging, setIsPeriodChanging] = useState(false);
+
   const { data: devices, isLoading: isLoadingDevices } = useDevices(
     selectedProjectId || ""
   );
-  const [period, setPeriod] = useState("monthly");
 
   useEffect(() => {
     if (!isBlocked && projects && projects.length > 0 && !selectedProjectId) {
@@ -145,10 +148,8 @@ export const Home = () => {
     return undefined;
   }, [selectedDeviceId, devices]);
 
-  // Buscar dados recentes quando o dispositivo padrão for selecionado
   const isDefaultDevice = currentDeviceId === undefined;
 
-  // Só buscar dados de média se NÃO for o dispositivo padrão
   const { data: dailyData, isLoading: dailyLoading } = useAvaregeDailyData(
     isDefaultDevice ? "" : currentDeviceId || ""
   );
@@ -157,44 +158,43 @@ export const Home = () => {
   const { data: weeklyData, isLoading: weeklyLoading } = useAvaregeWeeklyData(
     isDefaultDevice ? "" : currentDeviceId || ""
   );
+  const { data: annualData, isLoading: annualLoading } = useAvaregeAnnualData(
+    isDefaultDevice ? "" : currentDeviceId || ""
+  );
 
-  // Buscar dados recentes apenas para o dispositivo padrão
   const { data: recentSensorData, isLoading: recentDataLoading } =
     useRecentSensorData(
       isDefaultDevice ? currentDeviceId || "" : "",
       isDefaultDevice ? 50 : 0
     );
 
-  // Cast para o tipo correto
   const sensorData = recentSensorData as SensorData[] | undefined;
 
   const processData = (data: any[] | undefined, sensorName: string) => {
     if (!data) return [];
 
-    const processedData = data
-      .filter((item) => item.sensor_name === sensorName)
-      .map((item) => ({
+    const actualData = Array.isArray(data) ? data : (data as any)?.json || [];
+
+    const processedData = actualData
+      .filter((item: any) => item.sensor_name === sensorName)
+      .map((item: any) => ({
         ...item,
         average_value: parseFloat(item.average_value),
         date: item.date,
       }))
-      .filter((item) => {
+      .filter((item: any) => {
         const date = new Date(item.date);
         const isValid = !isNaN(date.getTime());
-        if (!isValid) {
-          console.warn(
-            `Data inválida encontrada para sensor ${sensorName}:`,
-            item.date
-          );
-        }
         return isValid;
       })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
 
     return processedData;
   };
 
-  // Função para processar dados recentes dos sensores
   const processRecentData = (
     sensorData: SensorData[] | undefined,
     sensorName: string
@@ -205,47 +205,105 @@ export const Home = () => {
     if (!sensor || !sensor.recent_data) return [];
 
     return sensor.recent_data
-      .map((item) => ({
+      .map((item: any) => ({
         date: item.timestamp,
         average_value: parseFloat(item.value),
         unit_of_measurement: sensor.unit_of_measurement,
       }))
-      .filter((item) => {
+      .filter((item: any) => {
         const date = new Date(item.date);
         const isValid = !isNaN(date.getTime()) && !isNaN(item.average_value);
-        if (!isValid) {
-          console.warn(
-            `Dado inválido encontrado para sensor ${sensorName}:`,
-            item
-          );
-        }
         return isValid;
       })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
   };
 
   const getDataByPeriod = (sensorName: string) => {
-    // Se for o dispositivo padrão, usar dados recentes
     if (isDefaultDevice && sensorData) {
       return processRecentData(sensorData, sensorName);
     }
 
-    // Caso contrário, usar dados de média por período
-    let data;
+    let data: any[] | undefined;
+    let periodName: string;
+    let maxItems: number;
+
     switch (period) {
       case "daily":
         data = dailyData;
+        periodName = "diário";
+        maxItems = 7;
         break;
       case "weekly":
         data = weeklyData;
+        periodName = "semanal";
+        maxItems = 4;
         break;
       case "monthly":
         data = monthlyData;
+        periodName = "mensal";
+        maxItems = 12;
+        break;
+      case "annual":
+        data = annualData;
+        periodName = "anual";
+        maxItems = 5;
         break;
       default:
         data = monthlyData;
+        periodName = "mensal";
+        maxItems = 12;
     }
-    return processData(data || [], sensorName);
+
+    const processedData = processData(data || [], sensorName);
+
+    let filteredData;
+
+    if (period === "daily") {
+      const oneDayAgo = new Date();
+      oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
+      filteredData = processedData.filter((item: any) => {
+        const itemDate = new Date(item.date);
+        return itemDate >= oneDayAgo;
+      });
+    } else if (period === "weekly") {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      filteredData = processedData.filter((item: any) => {
+        const itemDate = new Date(item.date);
+        return itemDate >= oneWeekAgo;
+      });
+    } else if (period === "monthly") {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+
+      filteredData = processedData.filter((item: any) => {
+        const itemDate = new Date(item.date);
+        return itemDate >= oneMonthAgo;
+      });
+    } else if (period === "annual") {
+      const oneYearAgo = new Date();
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+
+      filteredData = processedData.filter((item: any) => {
+        const itemDate = new Date(item.date);
+        return itemDate >= oneYearAgo;
+      });
+    } else {
+      filteredData = processedData
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+        .slice(0, maxItems)
+        .reverse();
+    }
+
+    return filteredData;
   };
 
   const airHum = useMemo(
@@ -255,6 +313,7 @@ export const Home = () => {
       dailyData,
       weeklyData,
       monthlyData,
+      annualData,
       currentDeviceId,
       isDefaultDevice,
       sensorData,
@@ -267,6 +326,7 @@ export const Home = () => {
       dailyData,
       weeklyData,
       monthlyData,
+      annualData,
       currentDeviceId,
       isDefaultDevice,
       sensorData,
@@ -279,6 +339,7 @@ export const Home = () => {
       dailyData,
       weeklyData,
       monthlyData,
+      annualData,
       currentDeviceId,
       isDefaultDevice,
       sensorData,
@@ -291,6 +352,7 @@ export const Home = () => {
       dailyData,
       weeklyData,
       monthlyData,
+      annualData,
       currentDeviceId,
       isDefaultDevice,
       sensorData,
@@ -303,6 +365,7 @@ export const Home = () => {
       dailyData,
       weeklyData,
       monthlyData,
+      annualData,
       currentDeviceId,
       isDefaultDevice,
       sensorData,
@@ -311,7 +374,7 @@ export const Home = () => {
 
   const isLoading = isDefaultDevice
     ? recentDataLoading
-    : dailyLoading || monthlyLoading || weeklyLoading;
+    : dailyLoading || monthlyLoading || weeklyLoading || annualLoading;
 
   const sensorConfigs = {
     airTemp: {
@@ -359,11 +422,13 @@ export const Home = () => {
       );
     }
 
-    if (isLoading) {
+    if (isLoading || isPeriodChanging) {
       return (
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md min-h-[350px] flex items-center justify-center border border-gray-200 dark:border-gray-700">
           <div className="text-gray-500 dark:text-gray-400">
-            Carregando dados...
+            {isPeriodChanging
+              ? "Atualizando período..."
+              : "Carregando dados..."}
           </div>
         </div>
       );
@@ -457,10 +522,8 @@ export const Home = () => {
 
   const { mutate: generateReport } = useGenerateReport();
 
-  // Verificar se há dados nos sensores
   const hasSensorData = useMemo(() => {
     if (isDefaultDevice) {
-      // Para dispositivo padrão, verificar dados recentes
       return (
         sensorData &&
         sensorData.some(
@@ -468,11 +531,22 @@ export const Home = () => {
         )
       );
     } else {
-      // Para outros dispositivos, verificar dados de média
       const hasData = (data: any[] | undefined) => data && data.length > 0;
-      return hasData(dailyData) || hasData(weeklyData) || hasData(monthlyData);
+      return (
+        hasData(dailyData) ||
+        hasData(weeklyData) ||
+        hasData(monthlyData) ||
+        hasData(annualData)
+      );
     }
-  }, [isDefaultDevice, sensorData, dailyData, weeklyData, monthlyData]);
+  }, [
+    isDefaultDevice,
+    sensorData,
+    dailyData,
+    weeklyData,
+    monthlyData,
+    annualData,
+  ]);
 
   const handleSendEmail = (email: string) => {
     if (!hasSensorData) {
@@ -482,6 +556,15 @@ export const Home = () => {
 
     generateReport({ id: currentDeviceId || "", email });
     toast.success("Relatório enviado com sucesso!");
+  };
+
+  const handlePeriodChange = (newPeriod: string) => {
+    setIsPeriodChanging(true);
+    setPeriod(newPeriod);
+
+    setTimeout(() => {
+      setIsPeriodChanging(false);
+    }, 500);
   };
 
   return (
@@ -563,7 +646,7 @@ export const Home = () => {
           <div className="flex justify-between items-center">
             <div className="flex gap-4 items-center">
               {!isDefaultDevice && (
-                <Select value={period} onValueChange={setPeriod}>
+                <Select value={period} onValueChange={handlePeriodChange}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Selecione o período" />
                   </SelectTrigger>
@@ -571,6 +654,7 @@ export const Home = () => {
                     <SelectItem value="daily">Diário</SelectItem>
                     <SelectItem value="weekly">Semanal</SelectItem>
                     <SelectItem value="monthly">Mensal</SelectItem>
+                    <SelectItem value="annual">Anual</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -599,6 +683,35 @@ export const Home = () => {
             </div>
           </div>
         </div>
+
+        {!isDefaultDevice && (
+          <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              <strong>Período atual:</strong>{" "}
+              {period === "daily"
+                ? "Diário (últimas 24 horas)"
+                : period === "weekly"
+                ? "Semanal (última semana)"
+                : period === "monthly"
+                ? "Mensal (último mês)"
+                : "Anual (último ano)"}
+              {isPeriodChanging && (
+                <span className="ml-2 text-blue-600 dark:text-blue-300">
+                  ⏳ Atualizando...
+                </span>
+              )}
+            </p>
+            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+              {period === "daily"
+                ? "Dados filtrados por período: últimas 24 horas"
+                : period === "weekly"
+                ? "Dados filtrados por período: última semana (7 dias)"
+                : period === "monthly"
+                ? "Dados filtrados por período: último mês (30 dias)"
+                : "Dados filtrados por período: último ano (365 dias)"}
+            </p>
+          </div>
+        )}
 
         {isDefaultDevice && (
           <div className="mt-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">

@@ -1,4 +1,10 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SensorData } from "@/types";
 
 interface SensorSelectProps {
@@ -9,7 +15,13 @@ interface SensorSelectProps {
   setShow: (show: boolean) => void;
 }
 
-export function SensorSelect({ sensors, selectedSensors, onAdd, show, setShow }: SensorSelectProps) {
+export function SensorSelect({
+  sensors,
+  selectedSensors,
+  onAdd,
+  show,
+  setShow,
+}: SensorSelectProps) {
   if (!show || !sensors || sensors.length === 0) return null;
   return (
     <div className="relative">
@@ -20,6 +32,7 @@ export function SensorSelect({ sensors, selectedSensors, onAdd, show, setShow }:
           }
           setShow(false);
         }}
+        value=""
         defaultOpen={true}
         onOpenChange={(open) => {
           if (!open) setShow(false);
@@ -35,7 +48,7 @@ export function SensorSelect({ sensors, selectedSensors, onAdd, show, setShow }:
               return {
                 ...item,
                 uniqueId,
-                originalIndex: index
+                originalIndex: index,
               };
             })
             .filter((item) => !selectedSensors.includes(item.uniqueId))
@@ -44,7 +57,8 @@ export function SensorSelect({ sensors, selectedSensors, onAdd, show, setShow }:
                 {item.sensor_name || `Sensor ${item.originalIndex + 1}`}
               </SelectItem>
             ))}
-          {sensors.filter((item) => !selectedSensors.includes(item.sensor_id)).length === 0 && (
+          {sensors.filter((item) => !selectedSensors.includes(item.sensor_id))
+            .length === 0 && (
             <SelectItem disabled value="none">
               Todos os sensores já foram adicionados
             </SelectItem>

@@ -20,7 +20,7 @@ export function ReportGraph() {
   const navigate = useNavigate();
   const [selectedProjectId, setSelectedProjectId] = useState<
     string | undefined
-  >(undefined);
+  >("");
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(
     undefined
   );
@@ -80,7 +80,7 @@ export function ReportGraph() {
       <div className="flex gap-4 mb-4">
         <ProjectSelect
           projects={projects || []}
-          value={selectedProjectId}
+          value={selectedProjectId || ""}
           onChange={(value) => {
             setSelectedProjectId(value);
             setSelectedDeviceId(undefined);
@@ -95,7 +95,7 @@ export function ReportGraph() {
         ) : (
           <DeviceSelect
             devices={devices || []}
-            value={selectedDeviceId}
+            value={selectedDeviceId || ""}
             onChange={(value: string) => {
               setSelectedDeviceId(value);
               setSelectedSensors([]);
@@ -156,6 +156,44 @@ export function ReportGraph() {
             (s: SensorData) => s.sensor_id === sensorId
           );
           if (!selectedSensor) return null;
+
+          if (
+            !selectedSensor.recent_data ||
+            selectedSensor.recent_data.length === 0
+          ) {
+            return (
+              <div key={sensorId} className="relative">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-bold">
+                    {selectedSensor.sensor_name}
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setSelectedSensors(
+                        selectedSensors.filter((id) => id !== sensorId)
+                      )
+                    }
+                    className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center justify-center h-32 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                  <div className="text-center">
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">
+                      Este sensor não possui dados
+                    </p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                      Nenhum dado foi coletado ainda
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           const onlyBar = isChuva(selectedSensor);
           const chartType = onlyBar
             ? "bar"
@@ -186,34 +224,20 @@ export function ReportGraph() {
                 }
                 onlyBar={onlyBar}
               />
-              {selectedSensor.recent_data &&
-              selectedSensor.recent_data.length > 0 ? (
-                <CustomChart
-                  data={selectedSensor.recent_data.sort(
-                    (a, b) =>
-                      new Date(a.timestamp).getTime() -
-                      new Date(b.timestamp).getTime()
-                  )}
-                  chartType={chartType}
-                  xKey={"timestamp"}
-                  yKey={"value"}
-                  legendName={selectedSensor.sensor_name}
-                  unit={selectedSensor.unit_of_measurement}
-                  dataMax={undefined}
-                  dataMin={undefined}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-32 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                  <div className="text-center">
-                    <p className="text-gray-500 dark:text-gray-400 font-medium">
-                      Este sensor não possui dados
-                    </p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                      Nenhum dado foi coletado ainda
-                    </p>
-                  </div>
-                </div>
-              )}
+              <CustomChart
+                data={[...selectedSensor.recent_data].sort(
+                  (a, b) =>
+                    new Date(a.timestamp).getTime() -
+                    new Date(b.timestamp).getTime()
+                )}
+                chartType={chartType}
+                xKey={"timestamp"}
+                yKey={"value"}
+                legendName={selectedSensor.sensor_name}
+                unit={selectedSensor.unit_of_measurement}
+                dataMax={undefined}
+                dataMin={undefined}
+              />
             </div>
           );
         })}
