@@ -681,7 +681,7 @@ export const Home = () => {
         {!isDefaultDevice && (
           <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>Período atual:</strong>{" "}
+              <strong>Média no período atual:</strong>{" "}
               {period === "daily"
                 ? "Diário (últimas 24 horas)"
                 : period === "weekly"
@@ -703,6 +703,9 @@ export const Home = () => {
                 : period === "monthly"
                 ? "Dados filtrados por período: último mês (30 dias)"
                 : "Dados filtrados por período: último ano (365 dias)"}
+            </p>
+            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+              Para acessar os dados exatos, utilize a aba de relatório.
             </p>
           </div>
         )}
