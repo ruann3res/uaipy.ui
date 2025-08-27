@@ -1,20 +1,24 @@
+import { Mail, Send, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Mail, Send, X } from "lucide-react";
 
 interface EmailButtonProps {
   onSendEmail?: (email: string) => void;
   buttonText?: string;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
+  disabledTooltip?: string;
 }
 
-export function EmailButton({ 
-  onSendEmail, 
-  buttonText = "Enviar Email", 
+export function EmailButton({
+  onSendEmail,
+  buttonText = "Enviar Email",
   placeholder = "Digite seu email",
-  className 
+  className,
+  disabled = false,
+  disabledTooltip = "Botão desabilitado",
 }: EmailButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -62,7 +66,11 @@ export function EmailButton({
           value={email}
           onChange={(e) => handleEmailChange(e.target.value)}
           onKeyDown={handleKeyPress}
-          className={`flex-1 ${!isValid && email ? 'border-red-500 focus-visible:ring-red-500/50' : ''}`}
+          className={`flex-1 ${
+            !isValid && email
+              ? "border-red-500 focus-visible:ring-red-500/50"
+              : ""
+          }`}
           autoFocus
         />
         <Button
@@ -86,12 +94,21 @@ export function EmailButton({
   }
 
   return (
-    <Button
-      onClick={() => setIsOpen(true)}
-      className={className}
-    >
-      <Mail className="w-4 h-4 mr-2" />
-      {buttonText}
-    </Button>
+    <div className="relative group">
+      <Button
+        onClick={() => setIsOpen(true)}
+        className={className}
+        disabled={disabled}
+      >
+        <Mail className="w-4 h-4 mr-2" />
+        {buttonText}
+      </Button>
+      {disabled && (
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {disabledTooltip}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+        </div>
+      )}
+    </div>
   );
-} 
+}

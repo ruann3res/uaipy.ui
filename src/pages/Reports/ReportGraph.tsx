@@ -1,32 +1,46 @@
-import { useState } from "react";
-import { useDevices, useRecentSensorData } from "@/hooks/useDevices";
-import { useProjects } from "@/hooks";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
 import { ProjectSelect, SensorSelect } from "@/components/Selects";
-import { CustomChart } from "./Charts/CustomChart";
-import { Device } from "@/types";
-import { SensorData } from "@/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useProjects } from "@/hooks";
+import { useDevices, useRecentSensorData } from "@/hooks/useDevices";
 import { useReadSensor } from "@/hooks/useSensor";
+import { Device, SensorData } from "@/types";
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { CustomChart } from "./Charts/CustomChart";
 import { SensorChartSwitcher } from "./Charts/SensorChartSwitcher";
 
 export function ReportGraph() {
   const navigate = useNavigate();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(undefined);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
+  const [selectedProjectId, setSelectedProjectId] = useState<
+    string | undefined
+  >(undefined);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(
+    undefined
+  );
   const [selectedSensors, setSelectedSensors] = useState<string[]>([]);
   const [showSensorSelect, setShowSensorSelect] = useState(false);
 
-  const [sensorChartTypes, setSensorChartTypes] = useState<Record<string, "line" | "bar">>({});
+  const [sensorChartTypes, setSensorChartTypes] = useState<
+    Record<string, "line" | "bar">
+  >({});
 
   const { data: projects } = useProjects();
-  const { data: devices, isLoading: isLoadingDevices } = useDevices(selectedProjectId || "");
-  const { data: recentSensorData, isLoading: isLoadingSensorData } = useRecentSensorData(
-    selectedDeviceId ? selectedDeviceId : "",
-    selectedDeviceId ? 24 : 0
+  const { data: devices, isLoading: isLoadingDevices } = useDevices(
+    selectedProjectId || ""
   );
+  const { data: recentSensorData, isLoading: isLoadingSensorData } =
+    useRecentSensorData(
+      selectedDeviceId ? selectedDeviceId : "",
+      selectedDeviceId ? 24 : 0
+    );
   const { data: readSensorData } = useReadSensor(selectedSensors[0]);
 
   const sensorData = recentSensorData as SensorData[] | undefined;
@@ -41,7 +55,12 @@ export function ReportGraph() {
     disabled?: boolean;
   }
 
-  function DeviceSelect({ devices, value, onChange, disabled }: DeviceSelectProps) {
+  function DeviceSelect({
+    devices,
+    value,
+    onChange,
+    disabled,
+  }: DeviceSelectProps) {
     return (
       <Select onValueChange={onChange} value={value} disabled={disabled}>
         <SelectTrigger>
@@ -72,7 +91,7 @@ export function ReportGraph() {
           }}
         />
         {selectedProjectId && !isLoadingDevices && devices?.length === 0 ? (
-          <Button onClick={() => navigate('/devices')} variant="outline">
+          <Button onClick={() => navigate("/devices")} variant="outline">
             Cadastrar dispositivos
           </Button>
         ) : (
@@ -104,10 +123,14 @@ export function ReportGraph() {
                   className="flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Adicionar Sensor ({sensorData.filter((item: SensorData) => {
-                    const uniqueId = item.sensor_id;
-                    return !selectedSensors.includes(uniqueId);
-                  }).length} disponíveis)
+                  Adicionar Sensor (
+                  {
+                    sensorData.filter((item: SensorData) => {
+                      const uniqueId = item.sensor_id;
+                      return !selectedSensors.includes(uniqueId);
+                    }).length
+                  }{" "}
+                  disponíveis)
                 </Button>
               ) : (
                 <Button variant="outline" disabled>
@@ -131,19 +154,42 @@ export function ReportGraph() {
       </div>
       <div className="grid grid-cols-1 gap-6 mt-6">
         {selectedSensors.map((sensorId) => {
-          const selectedSensor = sensorData?.find((s: SensorData) => s.sensor_id === sensorId);
+          const selectedSensor = sensorData?.find(
+            (s: SensorData) => s.sensor_id === sensorId
+          );
           if (!selectedSensor) return null;
           const onlyBar = isChuva(selectedSensor);
-          const chartType = onlyBar ? "bar" : (sensorChartTypes[sensorId] || "line");
+          const chartType = onlyBar
+            ? "bar"
+            : sensorChartTypes[sensorId] || "line";
           return (
-            <div key={sensorId}>
+            <div key={sensorId} className="relative">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-bold">
+                  {selectedSensor.sensor_name}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setSelectedSensors(
+                      selectedSensors.filter((id) => id !== sensorId)
+                    )
+                  }
+                  className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
               <SensorChartSwitcher
                 chartType={chartType}
-                onChange={(type) => setSensorChartTypes((prev) => ({ ...prev, [sensorId]: type }))}
+                onChange={(type) =>
+                  setSensorChartTypes((prev) => ({ ...prev, [sensorId]: type }))
+                }
                 onlyBar={onlyBar}
               />
-              <h2 className="text-lg font-bold mb-2">{selectedSensor.sensor_name}</h2>
-              {selectedSensor.recent_data && selectedSensor.recent_data.length > 0 && (
+              {selectedSensor.recent_data &&
+              selectedSensor.recent_data.length > 0 ? (
                 <CustomChart
                   data={selectedSensor.recent_data}
                   chartType={chartType}
@@ -154,6 +200,17 @@ export function ReportGraph() {
                   dataMax={readSensorData?.max_value}
                   dataMin={readSensorData?.min_value}
                 />
+              ) : (
+                <div className="flex items-center justify-center h-32 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                  <div className="text-center">
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">
+                      Este sensor não possui dados
+                    </p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                      Nenhum dado foi coletado ainda
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
           );
@@ -162,4 +219,3 @@ export function ReportGraph() {
     </>
   );
 }
-
