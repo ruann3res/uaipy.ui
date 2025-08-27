@@ -227,33 +227,27 @@ export const Home = () => {
     }
 
     let data: any[] | undefined;
-    let periodName: string;
     let maxItems: number;
 
     switch (period) {
       case "daily":
         data = dailyData;
-        periodName = "diário";
         maxItems = 7;
         break;
       case "weekly":
         data = weeklyData;
-        periodName = "semanal";
         maxItems = 4;
         break;
       case "monthly":
         data = monthlyData;
-        periodName = "mensal";
         maxItems = 12;
         break;
       case "annual":
         data = annualData;
-        periodName = "anual";
         maxItems = 5;
         break;
       default:
         data = monthlyData;
-        periodName = "mensal";
         maxItems = 12;
     }
 
