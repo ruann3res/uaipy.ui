@@ -51,12 +51,12 @@ export function SignUp() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">Nome completo</label>
+              <label htmlFor="name" className="text-sm font-medium">Username</label>
               <Input
                 id="name"
                 name="name"
                 type="text"
-                placeholder="Seu nome completo"
+                placeholder="Seu Username"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 required
