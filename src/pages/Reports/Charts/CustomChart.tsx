@@ -20,6 +20,7 @@ interface CustomChartProps {
   unit?: string;
   dataMin?: number;
   dataMax?: number;
+  color?: string;
 }
 
 export function CustomChart({
@@ -31,6 +32,7 @@ export function CustomChart({
   unit = "",
   dataMin = 0,
   dataMax = 0,
+  color = "#3b82f6",
 }: CustomChartProps) {
   const xAxisConfig = {
     dataKey: xKey,
@@ -105,7 +107,7 @@ export function CustomChart({
             }}
           />
           <Legend wrapperStyle={{ paddingTop: "20px" }} iconType="rect" />
-          <Bar dataKey={yKey} fill="#3b82f6" name={legendName} barSize={30} />
+          <Bar dataKey={yKey} fill={color} name={legendName} barSize={30} />
         </BarChart>
       ) : (
         <LineChart data={data}>
@@ -143,12 +145,11 @@ export function CustomChart({
           <Line
             type="monotone"
             dataKey={yKey}
-            stroke="#3b82f6"
+            stroke={color}
             strokeWidth={2}
             name={legendName}
-            dot={{ r: 3, fill: "#3b82f6" }}
-            activeDot={{ r: 6, fill: "#1d4ed8" }}
-            connectNulls={false}
+            dot={{ r: 3, fill: color }}
+            activeDot={{ r: 6, fill: color }}
           />
         </LineChart>
       )}

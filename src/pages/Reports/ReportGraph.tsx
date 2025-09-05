@@ -46,6 +46,30 @@ export function ReportGraph() {
     return sensor.sensor_name?.toLowerCase().includes("rain");
   }
 
+  function getSensorColor(sensorName: string | undefined): string {
+    if (!sensorName) return "#3b82f6"; // default blue
+
+    const lowerSensorName = sensorName.toLowerCase().replace(/_/g, " ");
+
+    if (lowerSensorName.includes("air tem")) {
+      return "#ff6b6b"; // red
+    }
+    if (lowerSensorName.includes("soil tem")) {
+      return "#8dc9ab"; // sage green
+    }
+    if (lowerSensorName.includes("air hum")) {
+      return "#b974db"; // purple
+    }
+    if (lowerSensorName.includes("soil hum")) {
+      return "#45b7d1"; // light blue
+    }
+    if (lowerSensorName.includes("rain")) {
+      return "#feca57"; // yellow
+    }
+
+    return "#3b82f6"; // default blue
+  }
+
   interface DeviceSelectProps {
     devices: Device[];
     value?: string;
@@ -232,11 +256,12 @@ export function ReportGraph() {
                 )}
                 chartType={chartType}
                 xKey={"timestamp"}
-                yKey={"value"}
+                yKey="value"
                 legendName={selectedSensor.sensor_name}
                 unit={selectedSensor.unit_of_measurement}
-                dataMax={undefined}
                 dataMin={undefined}
+                dataMax={undefined}
+                color={getSensorColor(selectedSensor.sensor_name)}
               />
             </div>
           );

@@ -380,7 +380,7 @@ export const Home = () => {
     airHum: {
       name: "Umidade do Ar",
       unit: airHum[0]?.unit_of_measurement || "%",
-      color: "#4ecdc4",
+      color: "#b974db",
       chartType: "point",
     },
     soilHum: {
@@ -392,7 +392,7 @@ export const Home = () => {
     soilTemp: {
       name: "Temperatura do Solo",
       unit: soilTemp[0]?.unit_of_measurement || "°C",
-      color: "#96ceb4",
+      color: "#8dc9ab",
       chartType: "point",
     },
     rain: {
