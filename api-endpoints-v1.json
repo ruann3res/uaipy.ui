@@ -1,0 +1,227 @@
+{
+  "metadata": {
+    "title": "uaipy.ui API V1 Endpoints",
+    "version": "1.0",
+    "total_endpoints": 26,
+    "base_url_env": "VITE_API_URL",
+    "authentication": "Bearer Token"
+  },
+  "endpoints": {
+    "authentication": [
+      {
+        "method": "POST",
+        "path": "/auth/register",
+        "description": "Registrar novo usuário",
+        "service": "AuthService",
+        "function": "signUp",
+        "content_type": "application/json"
+      },
+      {
+        "method": "POST", 
+        "path": "/auth/token",
+        "description": "Autenticar usuário e obter token",
+        "service": "AuthService",
+        "function": "signIn",
+        "content_type": "application/x-www-form-urlencoded"
+      }
+    ],
+    "projects": [
+      {
+        "method": "GET",
+        "path": "/projects",
+        "description": "Listar todos os projetos",
+        "service": "ProjectService",
+        "function": "get"
+      },
+      {
+        "method": "POST",
+        "path": "/projects",
+        "description": "Criar novo projeto", 
+        "service": "ProjectService",
+        "function": "create"
+      },
+      {
+        "method": "GET",
+        "path": "/projects/{id}",
+        "description": "Obter projeto por ID",
+        "service": "ProjectService", 
+        "function": "getById"
+      },
+      {
+        "method": "PUT",
+        "path": "/projects/{id}",
+        "description": "Atualizar projeto existente",
+        "service": "ProjectService",
+        "function": "update"
+      },
+      {
+        "method": "DELETE",
+        "path": "/projects/{id}",
+        "description": "Excluir projeto",
+        "service": "ProjectService",
+        "function": "delete"
+      }
+    ],
+    "devices": [
+      {
+        "method": "GET",
+        "path": "/devices",
+        "description": "Listar dispositivos por projeto",
+        "service": "DevicesService",
+        "function": "get",
+        "query_params": ["project_id"]
+      },
+      {
+        "method": "POST",
+        "path": "/devices",
+        "description": "Criar novo dispositivo",
+        "service": "DevicesService",
+        "function": "create"
+      },
+      {
+        "method": "GET",
+        "path": "/devices/{id}",
+        "description": "Obter dispositivo por ID",
+        "service": "DevicesService",
+        "function": "getById"
+      },
+      {
+        "method": "PUT",
+        "path": "/devices/{id}",
+        "description": "Atualizar dispositivo existente",
+        "service": "DevicesService",
+        "function": "update"
+      },
+      {
+        "method": "DELETE",
+        "path": "/devices/{id}",
+        "description": "Excluir dispositivo",
+        "service": "DevicesService",
+        "function": "delete"
+      },
+      {
+        "method": "GET",
+        "path": "/devices/{deviceId}/recent-sensor-data",
+        "description": "Obter dados recentes dos sensores",
+        "service": "DevicesService",
+        "function": "getRecentSensorData",
+        "query_params": ["limit"]
+      },
+      {
+        "method": "GET",
+        "path": "/devices/{id}/sensor-data/averages/daily",
+        "description": "Médias diárias dos sensores",
+        "service": "DevicesService",
+        "function": "deviceSensorDailyAverage"
+      },
+      {
+        "method": "GET",
+        "path": "/devices/{id}/sensor-data/averages/weekly",
+        "description": "Médias semanais dos sensores",
+        "service": "DevicesService",
+        "function": "deviceSensorWeeklyAverage"
+      },
+      {
+        "method": "GET",
+        "path": "/devices/{id}/sensor-data/averages/monthly",
+        "description": "Médias mensais dos sensores",
+        "service": "DevicesService",
+        "function": "deviceSensorMonthlyAverage"
+      },
+      {
+        "method": "GET",
+        "path": "/devices/{id}/sensor-data/averages/annual",
+        "description": "Médias anuais dos sensores",
+        "service": "DevicesService",
+        "function": "deviceSensorAnnualAverage"
+      },
+      {
+        "method": "POST",
+        "path": "/devices/{id}/report/email",
+        "description": "Gerar e enviar relatório por email",
+        "service": "DevicesService",
+        "function": "generateReport",
+        "query_params": ["to_email"]
+      }
+    ],
+    "sensors": [
+      {
+        "method": "POST",
+        "path": "/sensors",
+        "description": "Criar novo sensor",
+        "service": "SensorService",
+        "function": "createSensor"
+      },
+      {
+        "method": "GET",
+        "path": "/sensors/",
+        "description": "Listar sensores por dispositivo",
+        "service": "SensorService",
+        "function": "getSensors",
+        "query_params": ["device_id"]
+      },
+      {
+        "method": "GET",
+        "path": "/sensors/{id}",
+        "description": "Obter sensor por ID",
+        "service": "SensorService",
+        "function": "readSensor"
+      },
+      {
+        "method": "GET",
+        "path": "/sensors/{id}",
+        "description": "Obter sensor por ID (alternativo)",
+        "service": "SensorService",
+        "function": "getById"
+      },
+      {
+        "method": "PUT",
+        "path": "/sensors/{id}",
+        "description": "Atualizar sensor existente",
+        "service": "SensorService",
+        "function": "updateSensor"
+      },
+      {
+        "method": "DELETE",
+        "path": "/sensors/{id}",
+        "description": "Excluir sensor",
+        "service": "SensorService",
+        "function": "deleteSensor"
+      }
+    ],
+    "reports": [
+      {
+        "method": "GET",
+        "path": "/reports",
+        "description": "Obter todos os relatórios",
+        "service": "ReportsService",
+        "function": "get"
+      }
+    ],
+    "analytics": [
+      {
+        "method": "GET",
+        "path": "/analytics/users/statistics",
+        "description": "Obter estatísticas do usuário",
+        "service": "AnalyticsService",
+        "function": "get"
+      }
+    ]
+  },
+  "statistics": {
+    "by_method": {
+      "GET": 16,
+      "POST": 6,
+      "PUT": 3,
+      "DELETE": 3
+    },
+    "by_service": {
+      "Authentication": 2,
+      "Projects": 5,
+      "Devices": 11,
+      "Sensors": 6,
+      "Reports": 1,
+      "Analytics": 1
+    }
+  }
+}
